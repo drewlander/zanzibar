@@ -1,0 +1,129 @@
+div#header-wrapper 
+{ 
+background: #002900; 
+position: fixed; 
+top: 0; 
+left: 0; 
+min-width: 100%; 
+}
+
+div#header 
+{ 
+position: relative; 
+overflow: hidden; 
+height: 35px;
+width: 100%; 
+}
+
+div#logo 
+{ 
+position: absolute; 
+top: 0; 
+left: 0; 
+}
+
+div#logo h1 
+{ 
+margin: 0; 
+padding: 5px 5px 5px 5px; 
+letter-spacing: -1px; 
+font-size: 135% ; 
+color: #FFFFFF; 
+font-family: "Times New Roman"; 
+font-weight: normal; 
+}
+
+.header-right 
+{ 
+  float: right;
+  margin-right: 100px;
+  padding: 5px 5px 5px 0px;
+  color: #FFFFFF;
+  font-family: "Times New Roman";
+  font-size: 110%; 
+}
+
+.header-loggedinas 
+{
+line-height: 34px;
+color: #FFFFFF; 
+}
+.header-loggedinas .login 
+{
+color: #FFFFFF; 
+font-weight: bold; 
+}
+
+#logout a
+{
+color: #FFFFFF; 
+ 
+}
+
+div#bar 
+{ 
+position: relative;
+overflow: hidden; 
+height: 75px; 
+background: #004700; 
+min-width: 100%; 
+}
+
+div#outer 
+{ 
+position: static; 
+margin: 12em 2em 2em 2em; 
+}
+
+body 
+{
+font-size: 80%; 
+font-family: "Arial", Helvetica, Verdana, sans-serif; 
+}
+
+ul#tabs 
+{ 
+list-style-type: none; 
+margin: 30px 0 0 0; 
+padding: 0 0 0.3em 0; 
+}
+
+ul#tabs li 
+{ 
+display: inline; 
+}
+
+ul#tabs li a 
+{ 
+color: #42454a; 
+background-color: #dedbde; 
+border: 1px solid #c9c3ba; 
+border-bottom: none; 
+padding: 0.3em; 
+text-decoration: none; 
+}
+
+ul#tabs li a:hover 
+{ 
+background-color: #f1f0ee; 
+}
+
+ul#tabs li a.selected 
+{ 
+color: #002900; 
+background-color: #f1f0ee; 
+font-weight: bold; 
+padding: 0.7em 0.3em 0.38em 0.3em; 
+}
+
+div.tabContent 
+{ 
+border: 1px solid #c9c3ba; 
+padding: 0.5em; 
+background-color: #bdda57;
+}
+
+div.tabContent.hide 
+{ 
+display: none; 
+}				 
