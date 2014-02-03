@@ -90,7 +90,7 @@
 			<th style = "text-decoration: underline; text-align: left;"> Current Groups Listing: <br /> <br /></th>
 			<th style = "text-decoration: underline;"> Delete Group? <br /> <br /></th>
 			<?php
-					foreach(getAllGroups() as $key => $garray){
+					foreach(getManagableGroups($_SESSION['sid']) as $key => $garray){
 							echo "<tr><td>";
 							echo "<strong>".$garray['name']."</strong><br/>";
 							echo $garray['description'];
@@ -138,6 +138,24 @@ function getMyJoinableGroups(){
 	$groups = getJoinableGroupsByUID(getUIDBySession($_SESSION['sid']));
 	return $groups;
 }
+function getManagableGroups($session){
+	if(isAdmin($session)){
+		return getAllGroups();
+	} else {
+		$groups = array();
+		/*$result = mysqli_query($db, "");
+		while ($row = mysqli_fetch_array($result)){
+	                $groups[] = array('name'=>ucwords(str_replace("-"," ",$))." Group",'rawname'=>$gname,'description'=>str_replace("-"," ",$description),'gid'=>$gid);
+
+		}*/
+	
+	
+		return $groups;
+	}
+
+
+}
+
 /*function getAllGroups(){
 $groups = array(array ("name" => "Application Development Group",
                 "gid" => "1001",

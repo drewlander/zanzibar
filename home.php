@@ -21,13 +21,15 @@ if(!(empty($_POST['username'])) && !(empty($_POST['password']))){
 
 	}
 	if (!(checkValidLogin($_POST['username'],$_POST['password']))){
-		echo "Error: Invalid Username and Password";
+		echo "Error: Invalid Username and Password.<br/>redirecting in 3 seconds..";
+	        header( "refresh:3; url=index.php");
 		include("footer.php");
 		die();
 	} 
 } else {
 	if (!(checkSID())){
-		echo "Error: Invalid Session";
+		echo "Error: Invalid Session. <br/>redirecting in 3 seconds..";
+	        header( "refresh:3; url=index.php");
 		include("footer.php");
 		die();
 	}

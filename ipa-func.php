@@ -16,50 +16,32 @@ function isValidSession($sessid){
 
 // getJoinableGroupsByUID(String) => Array
 function getJoinableGroupsByUID($uid){
-        $groupJSON = json_decode(findAllJoinableGroupsByLogin(getLoginByUID($uid)));
-        $groups = array();
-
-
-        foreach($groupJSON->{'result'}->{'result'} as $key => $value){
-                $gname = $value->{'cn'}[0];
-                $description = $value->{'description'}[0];
-                $gid = $value->{'gidnumber'}[0];
-
-                $groups[] = array('name'=>ucwords(str_replace("-"," ",$gname))." Group",'rawname'=>$gname,'description'=>str_replace("-"," ",$description),'gid'=>$gid);
-        }
-        return $groups;
+        return getGroupArray(json_decode(findAllJoinableGroupsByLogin(getLoginByUID($uid))));
 }
 
 // getAllGroups() => Array
 function getAllGroups(){
-        $groupJSON = json_decode(findAllGroups());
-        $groups = array();
-	
-
-	foreach($groupJSON->{'result'}->{'result'} as $key => $value){
-	        $gname = $value->{'cn'}[0];
-	       	$description = $value->{'description'}[0];
-       		$gid = $value->{'gidnumber'}[0];
-
-                $groups[] = array('name'=>ucwords(str_replace("-"," ",$gname))." Group",'rawname'=>$gname,'description'=>str_replace("-"," ",$description),'gid'=>$gid);
-        }
-        return $groups;
+        return getGroupArray(json_decode(findAllGroups()));
 }
 
 // getGroupsByUID(String) => Array
 function getGroupsByUID ($uid){
-        $groupJSON = json_decode(findGroupsByLogin(getLoginByUID($uid)));
-	$groups = array();
-	
-	foreach($groupJSON->{'result'}->{'result'} as $key => $value) {
+        return getGroupArray(json_decode(findGroupsByLogin(getLoginByUID($uid))));
+}
+
+// getGroupArray(JSONObject) => Array
+function getGroupArray($jsonOBJ){
+        $groups = array();
+
+        foreach($jsonOBJ->{'result'}->{'result'} as $key => $value) {
                 $gname = $value->{'cn'}[0];
                 $description = $value->{'description'}[0];
                 $gid = $value->{'gidnumber'}[0];
 
 
-		$groups[] = array('name'=>ucwords(str_replace("-"," ",$gname))." Group",'rawname'=>$gname,'description'=>str_replace("-"," ",$description),'gid'=>$gid);
-		
-	}
+                $groups[] = array('name'=>ucwords(str_replace("-"," ",$gname))." Group",'rawname'=>$gname,'description'=>str_replace("-"," ",$description),'gid'=>$gid);
+
+        }
         return $groups;
 }
 
@@ -73,6 +55,12 @@ function getLoginByUID ($uid){
         $login = substr($userJSON,$start, $end);
 
         return $login;
+}
+
+// getUIDByLogin(String) => String
+function getUIDByLogin($username){
+	$userJSON = json_decode(findUserByLogin($username));
+	return $userJSON->{"result"}->{"result"}[0]->{"gidnumber"}[0];
 }
 
 // getUIDbySession(ipasession) => String
@@ -125,6 +113,14 @@ function findUserByUID ($uid){
 
 }
 
+// findUserByLogin(String) => JSONObject
+function findUserByLogin ($username){
+        $json = '{"method":"user_find","params":[[""],{"uid":"'.$username.'"}]}';
+        $output = runJSON($json);
+        return $output;
+
+}
+
 // findAllJoinableGroupsByLogin(String) => JSONObject
 function findAllJoinableGroupsByLogin ($login){
         $json = '{"method":"group_find","params":[[""],{"no_user":"'.$login.'"}]}';
@@ -141,7 +137,16 @@ function findGroupsByLogin ($login){
 
 }
 
-// findAllGroups(String) => JSONObject
+// findGroupByName(String) => JSONObject
+function findGroupByName($groupName){
+        $json = '{"method":"group_find","params":[[""],{"cn":"'.$groupName.'"}]}';
+        $output = runJSON($json);
+        return $output;
+
+
+}
+
+// findAllGroups() => JSONObject
 function findAllGroups (){
         $json = '{"method":"group_find","params":[[""],{}]}';
         $output = runJSON($json);
@@ -149,6 +154,20 @@ function findAllGroups (){
 
 }
 
+// isAdmin(ipasession) => boolean
+function isAdmin($sessid){
+	$IS_STRICT = true;
+
+	if (!(empty($sessid))){
+		$username = getLoginByUID(getUIDBySession($sessid));
+		
+		$userJSON = json_decode(findGroupByName('admins'));
+		$member_user = $userJSON -> {"result"} -> {"result"}[0]->{"member_user"};
+	
+		return in_array($username, $member_user, $IS_STRICT);
+	} else return false;
+
+}
 
 #########################
 #  Modifying Functions  #
@@ -168,12 +187,28 @@ function addUser ($username, $first, $last, $email, $password){
 }
 
 // addGroup(String, String, String, String, String) => Boolean
-function addGroup ($groupName, $groupOwner, $permission, $description, $requestAppeal){
+function addGroup ($groupName, $groupOwner, $permission, $description, $requestAppeal, $session){
+	// transform data
+        $uid = getUIDBySession($session);
+	if ($permission == 'request'){
+		$p = 0;
+	} else if ($permission == 'join'){
+		$p = 1;
+	} else return false;
+	
+	// insert into database
+        $db = getMYSQLConnection();
+        if($db){
+                mysqli_query($db, "INSERT INTO `Zanzibar`.`Groups` (`groupID`, `ownerID`, `isJoinable`) VALUES ('".$groupName."', '".$uid."', '".$p."');");
+        } else return false;
+
+	// inser into freeipa
 	$json = '{"method": "group_add", "params": [ [], {"cn":"'.$groupName.'","description":"'.$description.'"} ] }';
 	$output = runJSON($json);
 	
 	if(strpos($output,"Added group")){
-		##TODO: add owner and permissions to DB
+		// if successful commit database insert
+		mysqli_commit($db);
 		return true;
         } else {
                 return false;
@@ -189,7 +224,6 @@ function joinGroup ($username, $groupName){
         $output = runJSON($json);
 
         if(json_decode($output) -> {'result'} -> {'completed'}){
-                ##TODO: add owner and permissions to DB
                 return true;
         } else {
                 return false;
@@ -249,4 +283,13 @@ function runJSON($json, $sessid = null){
         return implode($output);
 
 }
-
+######################
+# Database Functions #
+######################
+function getMYSQLConnection(){
+	$db = mysqli_connect(localhost, 'root', 'root', 'Zanzibar');
+	mysqli_autocommit($db, FALSE);
+	if (mysqli_connect_errno()) {
+		return false;
+	} else return $db;	
+}

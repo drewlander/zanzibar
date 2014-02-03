@@ -9,7 +9,7 @@ if(!(empty($_POST['gname'])) && !(empty($_POST['owner'])) && !(empty($_POST['own
         $d = escapeshellcmd($_POST['desc']);
         $a = escapeshellcmd($_POST['appeal']);
 	if ($o == $_POST['owner2']){
-		if (addGroup($n, $o, $p, $d, $a)){
+		if (addGroup($n, $o, $p, $d, $a, $_SESSION['sid'])){
 			echo "Group has been created!<br/>";
 			echo "Redirect in 3 seconds...<br/>";
 			header( "refresh:3; url=home.php");
