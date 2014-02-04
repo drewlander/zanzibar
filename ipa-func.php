@@ -1,5 +1,5 @@
 <?php
-
+include('config.php');
 ##########################################################
 ##################  Cool IPA Functions  ##################
 ##########################################################
@@ -266,21 +266,24 @@ function leaveGroup ($username, $groupName){
 #######################
 //getSESSID(String, String) => String (ipasessid)
 function getSESSID($username, $password){
+        global $configs;
         $password = stripslashes($password);
-        exec('curl -v -H referer:https://freeipa.sudoscript.net/ipa/ui/index.html -H "Content-Type:application/x-www-form-urlencoded" -H "Accept:*/*" --negotiate -u : --cacert /tmp/ipa.ca.cert -d "user='.$username.'" -d "password='.$password.'" -D /tmp/cookie.txt -X POST -k https://freeipa.sudoscript.net/ipa/session/login_password 2>&1 | grep -o "ipa_session=[a-zA-Z0-9]*"', $sessid, $returnval);
+        exec('CURLOPT_COOKIELIST=1 curl -v -H referer:https://'.$configs['ipa_server'].'/ipa/ui/index.html -H "Content-Type:application/x-www-form-urlencoded" -H "Accept:*/*" --negotiate -u : --cacert /tmp/ipa.ca.cert -d "user='.$username.'" -d "password='.$password.'" -D /tmp/cookie.txt -X POST -k https://'.$configs['ipa_server'].'/ipa/session/login_password 2>&1 | grep -o "ipa_session=[a-zA-Z0-9]*"', $sessid, $returnval);
         return $sessid[0];
 }
 // getServiceAccountSESSID() => String (ipasessid)
 function getServiceAccountSESSID(){
-        exec('curl -v -H referer:https://freeipa.sudoscript.net/ipa/ui/index.html -H "Content-Type:application/x-www-form-urlencoded" -H "Accept:*/*" --negotiate -u : --cacert /tmp/ipa.ca.cert -d "user=admin" -d "password=passpass" -D /tmp/cookie.txt -X POST -k https://freeipa.sudoscript.net/ipa/session/login_password 2>&1 | grep -o "ipa_session=[a-zA-Z0-9]*"', $sessid, $returnval);
+        global $configs;
+        exec('curl -v -H referer:https://'.$configs['ipa_server'].'/ipa/ui/index.html -H "Content-Type:application/x-www-form-urlencoded" -H "Accept:*/*" --negotiate -u : --cacert /tmp/ipa.ca.cert -d "user='.$configs['ipa_username'].'" -d "password='.$configs['ipa_password'].'" -D /tmp/cookie.txt -X POST -k https://'.$configs['ipa_server'].'/ipa/session/login_password 2>&1 | grep -o "ipa_session=[a-zA-Z0-9]*"', $sessid, $returnval);
         return $sessid[0];
 }
 // runJSON(JSONObject[,ipasession]) => JSONObject
 function runJSON($json, $sessid = null){
+        global $configs;
         if (is_null($sessid)){
                 $sessid = getServiceAccountSESSID();
         }
-        exec('curl -v -H referer:https://freeipa.sudoscript.net/ipa/ui/index.html -H "Content-Type:application/json" -H "Accept:applicaton/json" -negotiate -u : --cacert /etc/ipa.ca.cert --cookie '.$sessid.' -d \''.$json.'\' -X POST -k https://freeipa.sudoscript.net/ipa/session/json', $output, $returnval);
+        exec('curl -v -H referer:https://'.$configs['ipa_server'].'/ipa/ui/index.html -H "Content-Type:application/json" -H "Accept:applicaton/json" -negotiate -u : --cacert /etc/ipa.ca.cert --cookie '.$sessid.' -d \''.$json.'\' -X POST -k https://'.$configs['ipa_server'].'/ipa/session/json', $output, $returnval);
         return implode($output);
 
 }
@@ -288,7 +291,8 @@ function runJSON($json, $sessid = null){
 # Database Functions #
 ######################
 function getMYSQLConnection(){
-	$db = mysqli_connect(localhost, 'root', 'root', 'Zanzibar');
+        global $configs;
+	$db = mysqli_connect(localhost, $configs['mysql_username'], $configs['mysql_password'], 'zanzibar');
 	mysqli_autocommit($db, FALSE);
 	if (mysqli_connect_errno()) {
 		return false;

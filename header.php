@@ -1,5 +1,6 @@
 <?php
-$mainlink = "http://web.sudoscript.net/";
+include('config.php');
+$mainlink = $configs['zanzibar_url'];
 session_start();
 ?>
 <html lang = 'en'>
