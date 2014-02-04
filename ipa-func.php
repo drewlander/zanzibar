@@ -266,6 +266,7 @@ function leaveGroup ($username, $groupName){
 #######################
 //getSESSID(String, String) => String (ipasessid)
 function getSESSID($username, $password){
+        $password = stripslashes($password);
         exec('curl -v -H referer:https://freeipa.sudoscript.net/ipa/ui/index.html -H "Content-Type:application/x-www-form-urlencoded" -H "Accept:*/*" --negotiate -u : --cacert /tmp/ipa.ca.cert -d "user='.$username.'" -d "password='.$password.'" -D /tmp/cookie.txt -X POST -k https://freeipa.sudoscript.net/ipa/session/login_password 2>&1 | grep -o "ipa_session=[a-zA-Z0-9]*"', $sessid, $returnval);
         return $sessid[0];
 }
